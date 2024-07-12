@@ -3,19 +3,98 @@ import aiohttp  # для работы с HTTP в асинхронном режи
 import datetime  # для работы с датой и временем
 from more_itertools import chunked  # для разделения списка на части.  # pip install more_itertools
 from models import init_orm, SwapiPeople, Session
+import requests
 print("asinc.py")
 
 max_requests = 5  # Определение максимального количества параллельных запросов
 
 
-async def get_people(http_session, person_id):
-    """
-    Асинхронная функция для выполнения GET запроса к API SWAPI по указанному person_id.
-    Возвращает JSON-ответ от сервера.
-    """
+# async def get_people(http_session, person_id):
+#     """
+#     Асинхронная функция для выполнения GET запроса к API SWAPI по указанному person_id.
+#     Возвращает JSON-ответ от сервера.
+#     """
+#     response = await http_session.get(f"https://swapi.dev/api/people/{person_id}/")
+#     json_data = await response.json()
+#     return json_data
+
+
+async def fetch_async(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+
+
+async def process_films(person_data):
+    if 'films' in person_data:
+        # Перебираем каждый фильм в списке films
+        for i, film_url in enumerate(person_data['films']):
+            # Отправляем запрос к API и получаем ответ
+            response = requests.get(film_url)
+            if response.status_code == 200:
+                # Проверяем, что ответ содержит данные
+                data = response.json()
+                if 'title' in data:
+                    # Заменяем URL на название фильма
+                    person_data['films'][i] = data['title']
+    return person_data
+
+
+async def process_species(person_data):
+    if 'species' in person_data:
+        # Перебираем каждую разновидность в списке species
+        for i, film_url in enumerate(person_data['species']):
+            # Отправляем запрос к API и получаем ответ
+            response = requests.get(film_url)
+            if response.status_code == 200:
+                # Проверяем, что ответ содержит данные
+                data = response.json()
+                if 'name' in data:
+                    # Заменяем URL на название фильма
+                    person_data['species'][i] = data['name']
+    return person_data
+
+
+async def process_starships(person_data):
+    if 'starships' in person_data:
+        # Перебираем каждый фильм в списке films
+        for i, starships_url in enumerate(person_data['starships']):
+            # Отправляем запрос к API и получаем ответ
+            response = requests.get(starships_url)
+            if response.status_code == 200:
+                # Проверяем, что ответ содержит данные
+                data = response.json()
+                if 'name' in data:
+                    # Заменяем URL на название фильма
+                    person_data['starships'][i] = data['name']
+    return person_data
+
+
+async def process_vehicles(person_data):
+    if 'vehicles' in person_data:
+        # Перебираем каждый фильм в списке films
+        for i, vehicles_url in enumerate(person_data['vehicles']):
+            # Отправляем запрос к API и получаем ответ
+            response = requests.get(vehicles_url)
+            if response.status_code == 200:
+                # Проверяем, что ответ содержит данные
+                data = response.json()
+                if 'name' in data:
+                    # Заменяем URL на название фильма
+                    person_data['vehicles'][i] = data['name']
+    return person_data
+
+
+async def get_people(http_session, person_id) -> list:
     response = await http_session.get(f"https://swapi.dev/api/people/{person_id}/")
-    json_data = await response.json()
-    return json_data
+    person_data = await response.json()
+
+    await process_films(person_data)
+    await process_species(person_data)
+    await process_starships(person_data)
+    await process_vehicles(person_data)
+    print(person_data)
+    return person_data
 
 
 async def insert_to_database(json_list):
@@ -38,7 +117,7 @@ async def main():
             print(result)
             await insert_to_database(result)  # Наша функция выше.
     finally:
-        await http_session.close()  # Явное закрытие HTTP-сессии в блоке finally для избежания утечек ресурсов
+        await http_session.close()  # Явное закрытие HTTP-сессии для избежания утечек ресурсов
 
 
 start = datetime.datetime.now()  # Получение текущего времени перед запуском основной функции

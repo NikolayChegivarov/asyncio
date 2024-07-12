@@ -1,10 +1,11 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-from sqlalchemy import Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float
+from typing import Optional
 import os
 from dotenv import load_dotenv
-from typing import Optional
 import json
+from sqlalchemy.ext.declarative import declarative_base
 
 load_dotenv()
 print("models.py")
@@ -36,24 +37,22 @@ class Base(DeclarativeBase, AsyncAttrs):
     pass
 
 
-# Создание подкласса для модели данных в базе данных, наследуемого от базового класса Base
-# Это определяет таблицу "swapi_people" в базе данных.
 class SwapiPeople(Base):
     __tablename__ = "swapi_people"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    birth_year: Mapped[Optional[str]] = mapped_column(String)
-    eye_color: Mapped[Optional[str]] = mapped_column(String)
-    films: Mapped[Optional[str]] = mapped_column(String)
-    gender: Mapped[Optional[str]] = mapped_column(String)
-    hair_color: Mapped[Optional[str]] = mapped_column(String)
-    height: Mapped[Optional[float]] = mapped_column(Float)
-    homeworld: Mapped[Optional[str]] = mapped_column(String)
-    mass: Mapped[Optional[float]] = mapped_column(Float)
-    name: Mapped[Optional[str]] = mapped_column(String)
-    skin_color: Mapped[Optional[str]] = mapped_column(String)
-    species: Mapped[Optional[str]] = mapped_column(String)
-    starships: Mapped[Optional[str]] = mapped_column(String)
-    vehicles: Mapped[Optional[str]] = mapped_column(String)
+    id: int = Column(Integer, primary_key=True)
+    birth_year: Optional[str] = Column(String)
+    eye_color: Optional[str] = Column(String)
+    films: Optional[str] = Column(String)
+    gender: Optional[str] = Column(String)
+    hair_color: Optional[str] = Column(String)
+    height: Optional[float] = Column(Float)
+    homeworld: Optional[str] = Column(String)
+    mass: Optional[float] = Column(Float)
+    name: Optional[str] = Column(String)
+    skin_color: Optional[str] = Column(String)
+    species: Optional[str] = Column(String)
+    starships: Optional[str] = Column(String)
+    vehicles: Optional[str] = Column(String)
 
     def __init__(self, json_data: dict):
         self.id = json_data.get('id')
@@ -62,8 +61,7 @@ class SwapiPeople(Base):
         self.films = ', '.join(json_data.get('films', [])) if json_data.get('films') else None
         self.gender = json_data.get('gender')
         self.hair_color = json_data.get('hair_color')
-        self.height = float(json_data.get('height')) if json_data.get('height') and json_data.get(
-            'height').isdigit() else None
+        self.height = float(json_data.get('height')) if json_data.get('height') and json_data.get('height').isdigit() else None
         self.homeworld = json_data.get('homeworld')
         self.mass = float(json_data.get('mass')) if json_data.get('mass') and json_data.get('mass').isdigit() else None
         self.name = json_data.get('name')
