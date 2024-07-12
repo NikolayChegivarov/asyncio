@@ -2,7 +2,7 @@ import asyncio  # для асинхронного программировани
 import aiohttp  # для работы с HTTP в асинхронном режиме.
 import datetime  # для работы с датой и временем
 from more_itertools import chunked  # для разделения списка на части.  # pip install more_itertools
-from models import init_orm
+from models import init_orm, SwapiPeople, Session
 print("asinc.py")
 
 max_requests = 5  # Определение максимального количества параллельных запросов
@@ -18,18 +18,28 @@ async def get_people(http_session, person_id):
     return json_data
 
 
+async def insert_to_database(json_list):
+    """Вставляем данные в таблицу."""
+    async with Session() as session:
+        orm_objects = [SwapiPeople(json_data=item) for item in json_list]
+        session.add_all(orm_objects)
+        await session.commit()
+
+
 async def main():
     """Основная асинхронная функция программы."""
-    await init_orm()
+    await init_orm()  # Наша функция из models.py
     http_session = aiohttp.ClientSession()  # Создание объекта aiohttp.ClientSession для управления HTTP-сессией
     try:
         for chunk_i in chunked(range(1, 100), max_requests):
             # Итерация по разбитому на части диапазону [1, 2, ..., 99] с максимум max_requests элементов в части
             coros = [get_people(http_session, i) for i in chunk_i]  # Создание списка корутин для каждого person_id в текущем chunk_i
             result = await asyncio.gather(*coros)  # Ожидание выполнения всех корутин и сбор результатов в список result
-            print(result)  # Вывод результатов каждой группы запросов (max_requests)
+            print(result)
+            await insert_to_database(result)  # Наша функция выше.
     finally:
         await http_session.close()  # Явное закрытие HTTP-сессии в блоке finally для избежания утечек ресурсов
+
 
 start = datetime.datetime.now()  # Получение текущего времени перед запуском основной функции
 asyncio.run(main())  # Запуск основной асинхронной функции main с помощью asyncio.run
