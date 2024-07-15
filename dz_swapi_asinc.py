@@ -9,16 +9,6 @@ print("asinc.py")
 max_requests = 5  # Определение максимального количества параллельных запросов
 
 
-# async def get_people(http_session, person_id):
-#     """
-#     Асинхронная функция для выполнения GET запроса к API SWAPI по указанному person_id.
-#     Возвращает JSON-ответ от сервера.
-#     """
-#     response = await http_session.get(f"https://swapi.dev/api/people/{person_id}/")
-#     json_data = await response.json()
-#     return json_data
-
-
 async def fetch_async(url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:

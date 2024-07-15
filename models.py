@@ -11,27 +11,31 @@ load_dotenv()
 print("models.py")
 
 try:
+    # Извлекаем переменные окружения.
     POSTGRES_USER = os.getenv("POSTGRES_USER")
     POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB = os.getenv("POSTGRES_DB")
     POSTGRES_HOST = os.getenv("POSTGRES_HOST")
     POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
+    # Проверяем всели переменные среды присутствуют.
     if not all([POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT]):
-        raise ValueError("One or more required environment variables are missing.")
+        raise ValueError("Отсутствуют одна или несколько обязательных переменных среды..")
 
+    # С помощью DSN строки подключаемся в бд Postgres.
     PG_DSN = (
         f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     )
 
+    # Создаем асинхронный движок.
     engine = create_async_engine(PG_DSN)
-    Session = async_sessionmaker(bind=engine, expire_on_commit=False)  # expire_on_commit - по умолчанию True и означает
-    # что сессия становиться не действительной после каждого commit. Мы его исправляем на False.
+    Session = async_sessionmaker(bind=engine, expire_on_commit=False)  # expire_on_commit - по умолчанию True и
+    # ..означает что сессия становиться не действительной после каждого commit. Мы его исправляем на False.
 except Exception as e:
     print(f"An error occurred: {e}")
 
 
-# Определение базового класса для ORM (Object-Relational Mapping) с использованием DeclarativeBase из SQLAlchemy
+# Определение базового класса для ORM с использованием DeclarativeBase из SQLAlchemy
 # и AsyncAttrs для поддержки асинхронных атрибутов.
 class Base(DeclarativeBase, AsyncAttrs):
     pass
@@ -71,8 +75,8 @@ class SwapiPeople(Base):
         self.vehicles = ', '.join(json_data.get('vehicles', [])) if json_data.get('vehicles') else None
 
 
-# Асинхронная функция для инициализации ORM и создания всех необходимых таблиц в базе данных.
 async def init_orm():
+    """Асинхронная функция для инициализации ORM и создания всех необходимых таблиц в базе данных."""
     async with engine.begin() as conn:  # Начало транзакции в базе данных через движок.
         # Выполнение синхронной операции внутри асинхронного контекста.
         # run_sync для асинхронного создания таблиц, так как сам метод create_all является синхронным.
