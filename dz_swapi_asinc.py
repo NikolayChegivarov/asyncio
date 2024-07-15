@@ -26,6 +26,8 @@ async def fetch_async(url):
 
 
 async def process_films(person_data):
+    """Функция заходит по ссылкам в ключе 'films',
+    извлекает название по ключу 'title', помещает через запятую названия вместо ссылок. """
     if 'films' in person_data:
         # Перебираем каждый фильм в списке films
         for i, film_url in enumerate(person_data['films']):
@@ -41,6 +43,8 @@ async def process_films(person_data):
 
 
 async def process_species(person_data):
+    """Функция заходит по ссылкам в ключе 'species',
+    извлекает название по ключу 'name', помещает через запятую названия вместо ссылок. """
     if 'species' in person_data:
         # Перебираем каждую разновидность в списке species
         for i, film_url in enumerate(person_data['species']):
@@ -56,6 +60,8 @@ async def process_species(person_data):
 
 
 async def process_starships(person_data):
+    """Функция заходит по ссылкам в ключе 'starships',
+    извлекает название по ключу 'name', помещает через запятую названия вместо ссылок. """
     if 'starships' in person_data:
         # Перебираем каждый фильм в списке films
         for i, starships_url in enumerate(person_data['starships']):
@@ -71,6 +77,8 @@ async def process_starships(person_data):
 
 
 async def process_vehicles(person_data):
+    """Функция заходит по ссылкам в ключе 'vehicles',
+    извлекает название по ключу 'name', помещает через запятую названия вместо ссылок. """
     if 'vehicles' in person_data:
         # Перебираем каждый фильм в списке films
         for i, vehicles_url in enumerate(person_data['vehicles']):
@@ -86,6 +94,7 @@ async def process_vehicles(person_data):
 
 
 async def get_people(http_session, person_id) -> list:
+    """Заходит по ссылке, получает json, заменяет в указанных ключах, ссылки на называния."""
     response = await http_session.get(f"https://swapi.dev/api/people/{person_id}/")
     person_data = await response.json()
 
